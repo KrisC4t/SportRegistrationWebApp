@@ -9,10 +9,13 @@ import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { useEffect } from 'react'
 import Link from 'next/link'
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { AlertCircle } from "lucide-react"
 
 export default function Register() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [registrationComplete, setRegistrationComplete] = useState(false)
   const router = useRouter()
   const supabase = createClientComponentClient()
 
@@ -20,7 +23,7 @@ export default function Register() {
     const checkUser = async () => {
       const { data: { user } } = await supabase.auth.getUser()
       if (user) {
-        router.push('/home')
+        router.push('/signin')
       }
     }
     checkUser()
@@ -32,8 +35,35 @@ export default function Register() {
     if (error) {
       alert(error.message)
     } else {
-      router.push('/home')
+      setRegistrationComplete(true)
     }
+  }
+
+  if (registrationComplete) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-100">
+        <Card className="w-full max-w-md">
+          <CardHeader>
+            <CardTitle>Registration Successful</CardTitle>
+            <CardDescription>Please check your email to confirm your account</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Alert>
+              <AlertCircle className="h-4 w-4" />
+              <AlertTitle>Important</AlertTitle>
+              <AlertDescription>
+                We&#39;ve sent a confirmation email to {email}. Please check your inbox and spam folder to confirm your email address. You won&#39;t be able to log in until you&#39;ve confirmed your email.
+              </AlertDescription>
+            </Alert>
+          </CardContent>
+          <CardFooter>
+            <Button onClick={() => router.push('/signin')} className="w-full">
+              Return to Sign In
+            </Button>
+          </CardFooter>
+        </Card>
+      </div>
+    )
   }
 
   return (

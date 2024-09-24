@@ -39,7 +39,7 @@ export default function CleanDatabase() {
           <CardDescription>Remove inactive accounts</CardDescription>
         </CardHeader>
         <CardContent>
-          <p>This action will remove all accounts that haven&#39t registered in the last two years.</p>
+          <p>This action will remove all accounts that haven&#39;t registered in the last two years.</p>
         </CardContent>
         <CardFooter>
           {!isConfirming ? (

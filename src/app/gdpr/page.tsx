@@ -31,7 +31,7 @@ export default function GDPR() {
           <h2 className="text-xl font-semibold mb-2">Data Modification</h2>
           <p className="mb-4">
             You can modify your data at any time from the web application.
-            Other members can't modify your data from the web application.
+            Other members can&#39;t modify your data from the web application.
             Authorized personnel can modify your role.
           </p>
           
