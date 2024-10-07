@@ -50,13 +50,13 @@ export default function AdminAccounts() {
     <div className="container mx-auto p-4">
       <h1 className="text-2xl font-bold mb-4 flex items-center">
         <UserCog className="mr-2" />
-        Manage Accounts
+        Gérer les comptes des instructeurs
       </h1>
       <Table>
         <TableHeader>
           <TableRow>
             <TableHead>Email</TableHead>
-            <TableHead>Admin</TableHead>
+            <TableHead>Instructeur</TableHead>
             <TableHead>Actions</TableHead>
           </TableRow>
         </TableHeader>
@@ -64,10 +64,10 @@ export default function AdminAccounts() {
           {accounts.map((account) => (
             <TableRow key={account.id}>
               <TableCell>{account.email}</TableCell>
-              <TableCell>{account.is_admin ? 'Yes' : 'No'}</TableCell>
+              <TableCell>{account.is_admin ? 'Oui' : 'Non'}</TableCell>
               <TableCell>
                 <Button onClick={() => toggleAdminRole(account.id, account.is_admin)}>
-                  {account.is_admin ? 'Remove Admin' : 'Make Admin'}
+                  {account.is_admin ? 'Supprimer le rôle d\'instructeur' : 'Ajouter le rôle d\'instructeur'}
                 </Button>
               </TableCell>
             </TableRow>

@@ -42,8 +42,8 @@ export default function SignIn() {
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle>Sign In</CardTitle>
-          <CardDescription>Enter your credentials to access your account</CardDescription>
+          <CardTitle>Connexion</CardTitle>
+          <CardDescription>Entrez vos identifiants pour accèder à votre compte</CardDescription>
         </CardHeader>
         <form onSubmit={handleSignIn}>
           <CardContent className="space-y-4">
@@ -59,7 +59,7 @@ export default function SignIn() {
               />
             </div>
             <div className="space-y-2">
-              <label htmlFor="password" className="text-sm font-medium">Password</label>
+              <label htmlFor="password" className="text-sm font-medium">Mot de passe</label>
               <Input
                 id="password"
                 type="password"
@@ -70,11 +70,11 @@ export default function SignIn() {
             </div>
           </CardContent>
           <CardFooter className="flex flex-col space-y-4">
-            <Button type="submit" className="w-full">Sign In</Button>
+            <Button type="submit" className="w-full">Connexion</Button>
             <div className="text-sm text-center">
-              Don&#39;t have an account?{' '}
+              Vous n&#39;avez pas de compte ?{' '}
               <Link href="/register" className="text-muted-foreground hover:underline">
-                Register here
+                Créer un compte
               </Link>
             </div>
           </CardFooter>

@@ -29,20 +29,20 @@ export default function DeleteAccount() {
         <CardHeader>
           <CardTitle className="flex items-center">
             <Trash2 className="mr-2" />
-            Delete Account
+            Suppression de votre compte
           </CardTitle>
-          <CardDescription>This action cannot be undone</CardDescription>
+          <CardDescription>Cette action est irréversible</CardDescription>
         </CardHeader>
         <CardContent>
-          <p>Are you sure you want to delete your account? This will permanently erase all your data.</p>
+          <p>Êtes-vous sur de vouloir supprimer le compte ? Cette action supprime toutes vos données de manière permanente.</p>
         </CardContent>
         <CardFooter>
           {!isConfirming ? (
-            <Button variant="destructive" onClick={() => setIsConfirming(true)}>Delete Account</Button>
+            <Button variant="destructive" onClick={() => setIsConfirming(true)}>Suppression de votre compte</Button>
           ) : (
             <>
-              <Button variant="outline" onClick={() => setIsConfirming(false)}>Cancel</Button>
-              <Button variant="destructive" onClick={handleDeleteAccount}>Confirm Delete</Button>
+              <Button variant="outline" onClick={() => setIsConfirming(false)}>Annuler</Button>
+              <Button variant="destructive" onClick={handleDeleteAccount}>Confirmez la suppression</Button>
             </>
           )}
         </CardFooter>

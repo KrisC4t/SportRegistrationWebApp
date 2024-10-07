@@ -85,15 +85,15 @@ export default function ClubRegistration() {
         <CardHeader>
           <CardTitle className="flex items-center">
             <ClipboardList className="mr-2" />
-            Club Registration
+            Inscription au club d&#39;auto défense
           </CardTitle>
-          <CardDescription>Register for this year&#39;s club membership</CardDescription>
+          <CardDescription>Inscription au club pour l&#39;année en cours</CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit}>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <label htmlFor="lastname" className="text-sm font-medium">Last Name</label>
+                <label htmlFor="lastname" className="text-sm font-medium">Nom</label>
                 <Input
                   id="lastname"
                   name="lastname"
@@ -103,7 +103,7 @@ export default function ClubRegistration() {
                 />
               </div>
               <div className="space-y-2">
-                <label htmlFor="firstname" className="text-sm font-medium">First Name</label>
+                <label htmlFor="firstname" className="text-sm font-medium">Prénom</label>
                 <Input
                   id="firstname"
                   name="firstname"
@@ -114,7 +114,7 @@ export default function ClubRegistration() {
               </div>
             </div>
             <div className="space-y-2">
-              <label htmlFor="phone" className="text-sm font-medium">Phone Number</label>
+              <label htmlFor="phone" className="text-sm font-medium">Numéro de téléphone</label>
               <Input
                 id="phone"
                 name="phone"
@@ -132,7 +132,7 @@ export default function ClubRegistration() {
                 checked={formData.whatsapp}
                 onCheckedChange={(checked) => setFormData(prev => ({ ...prev, whatsapp: checked as boolean }))}
               />
-              <label htmlFor="whatsapp" className="text-sm font-medium">Add to WhatsApp group</label>
+              <label htmlFor="whatsapp" className="text-sm font-medium">Ajout au groupe WhatsApp</label>
             </div>
             <div className="space-y-2">
               <label htmlFor="email" className="text-sm font-medium">Email</label>
@@ -146,7 +146,7 @@ export default function ClubRegistration() {
               />
             </div>
             <div className="space-y-2">
-              <label htmlFor="birthdate" className="text-sm font-medium">Birth Date</label>
+              <label htmlFor="birthdate" className="text-sm font-medium">Date de naissance</label>
               <Input
                 id="birthdate"
                 name="birthdate"
@@ -157,7 +157,7 @@ export default function ClubRegistration() {
               />
             </div>
             <div className="space-y-2">
-              <label htmlFor="address" className="text-sm font-medium">Address</label>
+              <label htmlFor="address" className="text-sm font-medium">Adresse</label>
               <Input
                 id="address"
                 name="address"
@@ -167,7 +167,7 @@ export default function ClubRegistration() {
               />
             </div>
             <div className="space-y-2">
-              <label htmlFor="payment_mode" className="text-sm font-medium">Payment Mode</label>
+              <label htmlFor="payment_mode" className="text-sm font-medium">Mode de payement</label>
               <Select
                 value={formData.payment_mode}
                 onValueChange={(value) => setFormData(prev => ({ ...prev, payment_mode: value }))}
@@ -184,7 +184,7 @@ export default function ClubRegistration() {
             </div>
           </CardContent>
           <CardFooter>
-            <Button type="submit" className="w-full">Submit Registration</Button>
+            <Button type="submit" className="w-full">S&#39;inscrire pour l&#39;année</Button>
           </CardFooter>
         </form>
       </Card>

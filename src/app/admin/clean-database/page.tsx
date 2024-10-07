@@ -34,27 +34,27 @@ export default function CleanDatabase() {
         <CardHeader>
           <CardTitle className="flex items-center">
             <Trash2 className="mr-2" />
-            Clean Database
+            Nettoyer la base de données
           </CardTitle>
-          <CardDescription>Remove inactive accounts</CardDescription>
+          <CardDescription>Supprimer les comptes inactifs</CardDescription>
         </CardHeader>
         <CardContent>
-          <p>This action will remove all accounts that haven&#39;t registered in the last two years.</p>
+          <p>Cette action supprimera définitivement tous les comptes inactifs depuis 2 ans.</p>
         </CardContent>
         <CardFooter>
           {!isConfirming ? (
             <Button onClick={() => setIsConfirming(true)} className="flex items-center">
               <Trash2 className="mr-2" />
-              Clean Database
+              Suppression des comptes inactifs
             </Button>
           ) : (
             <>
               <Button variant="outline" onClick={() => setIsConfirming(false)} className="mr-2">
-                Cancel
+                Annuler
               </Button>
               <Button variant="destructive" onClick={handleCleanDatabase} disabled={isLoading} className="flex items-center">
                 <Trash2 className="mr-2" />
-                {isLoading ? 'Cleaning...' : 'Confirm Clean'}
+                {isLoading ? 'Suppression en cours...' : 'Les comptes sont supprimés'}
               </Button>
             </>
           )}

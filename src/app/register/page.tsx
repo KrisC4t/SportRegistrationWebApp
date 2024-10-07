@@ -44,21 +44,23 @@ export default function Register() {
       <div className="flex items-center justify-center min-h-screen bg-gray-100">
         <Card className="w-full max-w-md">
           <CardHeader>
-            <CardTitle>Registration Successful</CardTitle>
-            <CardDescription>Please check your email to confirm your account</CardDescription>
+            <CardTitle>Création de compte réussi</CardTitle>
+            <CardDescription>Regardez vos mails pour confirmer votre création de compte</CardDescription>
           </CardHeader>
           <CardContent>
             <Alert>
               <AlertCircle className="h-4 w-4" />
               <AlertTitle>Important</AlertTitle>
               <AlertDescription>
-                We&#39;ve sent a confirmation email to {email}. Please check your inbox and spam folder to confirm your email address. You won&#39;t be able to log in until you&#39;ve confirmed your email.
+                Nous avons envoyé un mail de confirmation à {email}.
+                Vérifiez vos mails et votre dossier de spam pour pouvoir confirmer votre création de compte.
+                Vous ne pourrez pas vous connecter tant que votre création de compte ne sera pas validé avec le mail envoyé.
               </AlertDescription>
             </Alert>
           </CardContent>
           <CardFooter>
             <Button onClick={() => router.push('/signin')} className="w-full">
-              Return to Sign In
+              Retourner à la page d&#39;inscription
             </Button>
           </CardFooter>
         </Card>
@@ -70,8 +72,8 @@ export default function Register() {
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle>Register</CardTitle>
-          <CardDescription>Create a new account</CardDescription>
+          <CardTitle>Creátion de compte</CardTitle>
+          <CardDescription>Création d&#39;un nouveau compte</CardDescription>
         </CardHeader>
         <form onSubmit={handleRegister}>
           <CardContent className="space-y-4">
@@ -87,7 +89,7 @@ export default function Register() {
               />
             </div>
             <div className="space-y-2">
-              <label htmlFor="password" className="text-sm font-medium">Password</label>
+              <label htmlFor="password" className="text-sm font-medium">Mot de passe</label>
               <Input
                 id="password"
                 type="password"
@@ -98,14 +100,14 @@ export default function Register() {
             </div>
           </CardContent>
           <CardFooter>
-            <Button type="submit" className="w-full">Register</Button>
+            <Button type="submit" className="w-full">Créer votre compte</Button>
           </CardFooter>
         </form>
         <CardFooter className="flex flex-col space-y-4">
             <div className="text-sm text-center">
-              Already have an account?{' '}
+              Vous avez déjà un compte ?{' '}
               <Link href="/signin" className="text-muted-foreground hover:underline">
-                Signin here
+                Connectez-vous ici
               </Link>
             </div>
           </CardFooter>

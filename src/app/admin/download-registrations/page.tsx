@@ -66,10 +66,10 @@ export default function DownloadRegistrations() {
     <div className="container mx-auto p-4">
       <h1 className="text-2xl font-bold mb-4 flex items-center">
         <Download className="mr-2" />
-        Download Current Registrations
+        Télécharger les inscriptions de l&#39;année en cours
       </h1>
       <Button onClick={handleDownload} disabled={isLoading}>
-        {isLoading ? 'Downloading...' : 'Download CSV'}
+        {isLoading ? 'Téléchargement en cours...' : 'Téléchargement au format CSV'}
       </Button>
     </div>
   )

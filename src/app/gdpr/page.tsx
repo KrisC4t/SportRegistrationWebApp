@@ -9,47 +9,45 @@ export default function GDPR() {
         <CardHeader>
           <CardTitle className="flex items-center">
             <Scale className="mr-2" />
-            GDPR Information
+            Information RGPD
           </CardTitle>
-          <CardDescription>How we handle your data</CardDescription>
+          <CardDescription>Traitements de vos données</CardDescription>
         </CardHeader>
         <CardContent>
-          <h2 className="text-xl font-semibold mb-2">Data Collection and Usage</h2>
+          <h2 className="text-xl font-semibold mb-2">Collecte et utilisations de vos données</h2>
           <p className="mb-4">
-            We collect and process your personal data for the purpose of managing your club membership. 
-            This includes your name, contact information, and registration details.
+            Nous collectons et utilisons vos données pour gérer les inscriptions des membres du club.
+            Cela inclut votre identité, des moyens de contact et les détails de l&#39;inscription.
           </p>
           
-          <h2 className="text-xl font-semibold mb-2">Data Storage and Extraction</h2>
+          <h2 className="text-xl font-semibold mb-2">Stockage et extraction des données</h2>
           <p className="mb-4">
-            Your data is securely stored in our database and is only accessible to authorized personnel.
-            The authorized personnel can extract all registrations to create your license.
-            The database service name is supabase and data are stored on the service infrastructure,
-            administrator can access to the data.
+            Vos données sont stockées de manière sécurisé dans notre base de données.
+            Les inscriptions de l&#39;année en cours sont accessible aux instructeurs du club d&#39;auto défense.
+            Les instructeurs peuvent télécharger toutes les inscriptions de l&#39;année en cours pour créer votre license.
+            Le service de stockage est &#34;supabase&#34;, vos données sont stockées sur leurs infrastructures,
+            les administrateurs peuvent y avoir accès dans les contextes nécessitant des interventions pour le bon fonctionnement du service.
           </p>
 
-          <h2 className="text-xl font-semibold mb-2">Data Modification</h2>
+          <h2 className="text-xl font-semibold mb-2">Modification des données</h2>
           <p className="mb-4">
-            You can modify your data at any time from the web application.
-            Other members can&#39;t modify your data from the web application.
-            Authorized personnel can modify your role.
+            Vous pouvez modifier vos données quand vous le souhaitez depuis cette application web.
+            Les autres membres du club (y compris les instructeurs) ne peuvent modifier vos données personnelles.
+            Les instructeurs peuvent modifier votre rôle en rôle instructeurs si nécessaire pour le bon fonctionnement des inscriptions au club.
           </p>
           
-          <h2 className="text-xl font-semibold mb-2">Data Retention</h2>
+          <h2 className="text-xl font-semibold mb-2">Durée de stockage</h2>
           <p className="mb-4">
-            We retain your data for as long as you are an active member, plus two years. After this period, 
-            your data can be deleted by authorized personnel if you haven&#39;t renewed your membership.
+            Nous stockons vos données durant tout le temps où vous serez un membre actif.
+            Si vous avez une période d&#39;inactivité plus grande que 2 ans (pas de renouvellement d&#39;inscription au club),
+            vos données pourront être supprimées par les instructeurs, sans consultations préalables des données
+            (donc sans tri possible par les instructeurs).
           </p>
           
-          <h2 className="text-xl font-semibold mb-2">Your Rights</h2>
+          <h2 className="text-xl font-semibold mb-2">Vos droits</h2>
           <p className="mb-4">
-            You have the right to access, rectify, or erase your personal data. You can also request a copy of your data 
-            or restrict its processing. To exercise these rights, please contact our data protection officer.
-          </p>
-          
-          <h2 className="text-xl font-semibold mb-2">Contact</h2>
-          <p>
-            For any questions regarding your data or this policy, please contact us at: privacy@selfdefenseclub.com
+            Vous avez le droit d&#39;accèder, de rectifier, de modifier et de supprimer vos données quand vous le souhaitez.
+            Vous pouvez donc récupérer toutes vos informations personnelles dans les différentes pages de l&#39;application.
           </p>
         </CardContent>
       </Card>
