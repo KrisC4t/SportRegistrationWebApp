@@ -23,6 +23,21 @@ interface FormData {
   image_rights_consent: boolean
 }
 
+interface Registration {
+  user_id: string
+  year: number
+  lastname: string
+  firstname: string
+  phone: string
+  whatsapp: boolean
+  email: string
+  birthdate: string
+  address: string
+  payment_mode: string
+  image_rights_consent: boolean
+}
+
+
 export default function ClubRegistration() {
   const [formData, setFormData] = useState<FormData>({
     lastname: '',
@@ -87,13 +102,16 @@ export default function ClubRegistration() {
       alert('You must accept the image rights to continue.');
       return;
     }
+    
+    const registrationPayload: Registration = {
+      ...formData,
+      user_id: user.id,
+      year: new Date().getFullYear(),
+    }
 
     const { data: registrationData, error: registrationError } = await supabase
       .from('registrations')
-      .upsert(
-        { ...formData, user_id: user.id, year: new Date().getFullYear() },
-        { onConflict: ['user_id', 'year'] }
-      )
+      .upsert(registrationPayload, { onConflict: ['user_id', 'year'] })
       .select()
       .single();
 
