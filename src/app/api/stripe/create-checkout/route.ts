@@ -9,7 +9,7 @@ if (!process.env.STRIPE_SECRET_KEY || !process.env.SUPABASE_URL || !process.env.
   console.error('Missing required ENV for Stripe create-checkout. Set STRIPE_SECRET_KEY, SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY.');
 }
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', { apiVersion: '2022-11-15' });
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', { apiVersion: '2025-08-27.basil' });
 const supabase = createClient(process.env.SUPABASE_URL || '', process.env.SUPABASE_SERVICE_ROLE_KEY || '');
 
 const TARGET_NET_CENTS = process.env.TARGET_NET_CENTS ? parseInt(process.env.TARGET_NET_CENTS, 10) : 21000;    // 210.00
