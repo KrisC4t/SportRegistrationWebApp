@@ -24,12 +24,28 @@ CREATE TABLE registrations (
     birthdate DATE NOT NULL,
     address TEXT NOT NULL,
     payment_mode TEXT NOT NULL,
+    image_rights_consent BOOLEAN NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT unique_user_year UNIQUE (user_id, year)
+);
+
+-- Table: payments
+-- Stores online payments made via Stripe. Entries are immutable after creation.
+
+CREATE TABLE payments (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    registration_id UUID NOT NULL REFERENCES registrations(id) ON DELETE CASCADE,
+    user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+    stripe_payment_id TEXT UNIQUE NOT NULL,
+    amount INT NOT NULL,
+    currency TEXT NOT NULL DEFAULT 'eur',
+    status TEXT NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Create function to handle user deletion
-CREATE OR REPLACE FUNCTION delete_user()
+CREATE OR REPLACE FUNCTION delete_current_user()
 RETURNS void
 LANGUAGE plpgsql
 SECURITY DEFINER
@@ -107,7 +123,7 @@ CREATE POLICY "Users can update their own registrations"
   USING (auth.uid() = user_id);
 
 -- Admin policies
-CREATE FUNCTION is_admin(_user_id uuid) 
+CREATE FUNCTION is_admin() 
 RETURNS bool AS $$
   SELECT EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND is_admin = TRUE);
 $$ LANGUAGE sql SECURITY DEFINER;
@@ -162,8 +178,8 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- Create a trigger that uses the function
-CREATE TRIGGER prevent_is_admin_change
-BEFORE UPDATE ON profiles
+CREATE TRIGGER prevent_is_admin_change./src/middleware.ts
+BEFORE UPDATE ON profilesCONSTRAINT unique_user_year UNIQUE (user_id, year)
 FOR EACH ROW
 EXECUTE FUNCTION prevent_is_admin_modification();
 
@@ -175,3 +191,84 @@ ON profiles
 FOR UPDATE
 USING (auth.uid() = id)
 WITH CHECK (auth.uid() = id);
+
+-- Prevent image rights modification
+CREATE OR REPLACE FUNCTION prevent_image_rights_modification()
+RETURNS TRIGGER AS $$
+BEGIN
+  IF OLD.image_rights_consent IS DISTINCT FROM NEW.image_rights_consent THEN
+    RAISE EXCEPTION 'Image rights consent cannot be modified after registration.';
+  END IF;
+
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Create a trigger that uses the function
+CREATE TRIGGER trg_prevent_image_rights_modification
+  BEFORE UPDATE ON registrations
+  FOR EACH ROW
+  EXECUTE FUNCTION prevent_image_rights_modification();
+
+-- Function: Prevents any update on payments
+CREATE OR REPLACE FUNCTION prevent_payment_modification()
+RETURNS TRIGGER AS $$
+BEGIN
+  RAISE EXCEPTION 'Payments cannot be modified after creation.';
+END;
+$$ LANGUAGE plpgsql;
+
+-- Function: Prevents any deletion on payments
+CREATE OR REPLACE FUNCTION prevent_payment_deletion()
+RETURNS TRIGGER AS $$
+BEGIN
+  RAISE EXCEPTION 'Payments cannot be deleted.';
+END;
+$$ LANGUAGE plpgsql;
+
+-- Trigger: Blocks updates on payments
+CREATE TRIGGER trg_prevent_payment_update
+  BEFORE UPDATE ON payments
+  FOR EACH ROW
+  EXECUTE FUNCTION prevent_payment_modification();
+
+-- Trigger: Blocks deletions on payments
+CREATE TRIGGER trg_prevent_payment_delete
+  BEFORE DELETE ON payments
+  FOR EACH ROW
+  EXECUTE FUNCTION prevent_payment_deletion();
+
+-- Enable Row Level Security
+ALTER TABLE payments ENABLE ROW LEVEL SECURITY;
+
+-- Policy: Users can view their own payments
+CREATE POLICY "Users can view their own payments"
+  ON payments FOR SELECT
+  USING (auth.uid() = user_id);
+
+-- Policy: Prevent all direct inserts (use RPC or webhook only)
+CREATE POLICY "No direct inserts"
+  ON payments FOR INSERT
+  WITH CHECK (false);
+
+-- Policy: Prevent all updates
+CREATE POLICY "No updates"
+  ON payments FOR UPDATE
+  USING (false);
+
+-- Policy: Prevent all deletions
+CREATE POLICY "No deletes"
+  ON payments FOR DELETE
+  USING (false);
+
+-- Policy: Admins can view all payments
+CREATE POLICY "Admins can view all payments"
+  ON payments FOR SELECT
+  USING (
+    EXISTS (
+      SELECT 1 FROM profiles WHERE id = auth.uid() AND is_admin = TRUE
+    )
+  );
+
+
+

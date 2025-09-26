@@ -11,8 +11,20 @@ import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 
+interface FormData {
+  lastname: string
+  firstname: string
+  phone: string
+  whatsapp: boolean
+  email: string
+  birthdate: string
+  address: string
+  payment_mode: string
+  image_rights_consent: boolean
+}
+
 export default function ClubRegistration() {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormData>({
     lastname: '',
     firstname: '',
     phone: '',
@@ -20,7 +32,8 @@ export default function ClubRegistration() {
     email: '',
     birthdate: '',
     address: '',
-    payment_mode: ''
+    payment_mode: '',
+    image_rights_consent: false
   })
   const router = useRouter()
   const supabase = createClientComponentClient()
@@ -39,7 +52,17 @@ export default function ClubRegistration() {
           .single()
 
         if (data && !error) {
-          setFormData(data)
+          setFormData({
+	    lastname: data.lastname || '',
+	    firstname: data.firstname || '',
+	    phone: data.phone || '',
+	    whatsapp: data.whatsapp || false,
+	    email: data.email || '',
+	    birthdate: data.birthdate || '',
+	    address: data.address || '',
+	    payment_mode: data.payment_mode || '',
+	    image_rights_consent: data.image_rights_consent || false,
+	  })
         }
       }
     }
@@ -47,29 +70,79 @@ export default function ClubRegistration() {
   }, [supabase])
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    const { data: { user } } = await supabase.auth.getUser()
-    if (user) {
-      const { error: registrationError } = await supabase
-        .from('registrations')
-        .upsert({ ...formData, user_id: user.id, year: new Date().getFullYear() })
+    e.preventDefault();
 
-      if (registrationError) {
-        alert(registrationError.message)
+    const {
+      data: { session },
+      error: sessionError
+    } = await supabase.auth.getSession();
+    const user = session?.user;
+
+    if (sessionError || !user) {
+      alert('Please log in before registering.');
+      return;
+    }
+
+    if (!formData.image_rights_consent) {
+      alert('You must accept the image rights to continue.');
+      return;
+    }
+
+    const { data: registrationData, error: registrationError } = await supabase
+      .from('registrations')
+      .upsert(
+        { ...formData, user_id: user.id, year: new Date().getFullYear() },
+        { onConflict: ['user_id', 'year'] }
+      )
+      .select()
+      .single();
+
+    if (registrationError || !registrationData) {
+      alert(registrationError?.message ?? 'Error saving the registration.');
+      console.error('registration error', registrationError);
+      return;
+    }
+
+    const { error: profileError } = await supabase
+      .from('profiles')
+      .update({ last_registration: new Date().toISOString().split('T')[0] })
+      .eq('id', user.id);
+
+    async function launchPayment(registrationId: string) {
+      // Get the access token to identify the caller server-side
+      // If you have supabase-js v2: use auth.getSession() or auth.getUser()
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      const accessToken = session?.access_token;
+
+      if (sessionError || !accessToken) {
+        alert('Unable to retrieve session. Please log in again.');
+        return;
+      }
+  
+      const res = await fetch('/api/stripe/create-checkout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({ registrationId }),
+      });
+
+      const data = await res.json();
+      if (data?.url) {
+        window.location.href = data.url;
       } else {
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .update({ last_registration: new Date().toISOString().split('T')[0] })
-          .eq('id', user.id)
-
-        if (profileError) {
-          alert(profileError.message)
-        } else {
-          router.push('/home')
-        }
+        alert('Error creating the payment : ' + (data?.error ?? 'unknown'));
+        console.error('create-checkout failure', data);
       }
     }
-  }
+
+    await launchPayment(registrationData.id);
+
+    if (profileError) {
+      console.warn('Profile update error:', profileError);
+    }
+  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target
@@ -176,11 +249,29 @@ export default function ClubRegistration() {
                   <SelectValue placeholder="Select payment mode" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="espèces">Espèces</SelectItem>
-                  <SelectItem value="1 chèque bancaire">1 chèque bancaire</SelectItem>
-                  <SelectItem value="2 chèques bancaires">2 chèques bancaires</SelectItem>
+                  <SelectItem value="espèces">Cash</SelectItem>
+                  <SelectItem value="1 chèque bancaire">1 bank check</SelectItem>
+                  <SelectItem value="2 chèques bancaires">2 bank checks</SelectItem>
+                  <SelectItem value="carte bancaire">Credit card (online)</SelectItem>
                 </SelectContent>
               </Select>
+            </div>
+            <div className="flex items-start space-x-2 pt-4">
+              <Checkbox
+                id="image_rights_consent"
+                name="image_rights_consent"
+                checked={formData.image_rights_consent}
+                onCheckedChange={(checked) =>
+                  setFormData(prev => ({ ...prev, image_rights_consent: checked as boolean }))
+                }
+                required
+              />
+              <label htmlFor="image_rights_consent" className="text-sm font-medium leading-snug">
+                I consent to the use of my image as part of the club's communication materials. <br />
+                <span className="text-xs text-muted-foreground">
+                  This consent cannot be changed once submitted.
+                </span>
+              </label>
             </div>
           </CardContent>
           <CardFooter>
