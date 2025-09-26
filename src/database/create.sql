@@ -130,11 +130,11 @@ $$ LANGUAGE sql SECURITY DEFINER;
 
 CREATE POLICY "Admins can view all profiles"
   ON profiles FOR SELECT
-  USING (is_admin(auth.uid()));
+  USING (is_admin());
 
 CREATE POLICY "Admins can update all profiles"
   ON profiles FOR UPDATE
-  USING (is_admin(auth.uid()));
+  USING (is_admin());
 
 CREATE POLICY "Admins can view all registrations"
   ON registrations FOR SELECT
@@ -178,8 +178,8 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- Create a trigger that uses the function
-CREATE TRIGGER prevent_is_admin_change./src/middleware.ts
-BEFORE UPDATE ON profilesCONSTRAINT unique_user_year UNIQUE (user_id, year)
+CREATE TRIGGER prevent_is_admin_change
+BEFORE UPDATE ON profiles
 FOR EACH ROW
 EXECUTE FUNCTION prevent_is_admin_modification();
 
