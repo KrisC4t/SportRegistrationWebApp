@@ -111,7 +111,7 @@ export default function ClubRegistration() {
 
     const { data: registrationData, error: registrationError } = await supabase
       .from('registrations')
-      .upsert(registrationPayload, { onConflict: ['user_id', 'year'] })
+      .upsert(registrationPayload)
       .select()
       .single();
 
