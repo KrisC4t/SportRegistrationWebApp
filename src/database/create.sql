@@ -89,60 +89,11 @@ BEGIN
 END;
 $$;
 
--- Create RLS policies
-
--- Profiles table policies
-ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
-
-CREATE POLICY "Users can view their own profile"
-  ON profiles FOR SELECT
-  USING (auth.uid() = id);
-
-CREATE POLICY "Users can update their own profile"
-  ON profiles FOR UPDATE
-  USING (auth.uid() = id);
-
--- Only allow insert for authenticated users
-CREATE POLICY "Users can insert their own profile"
-  ON profiles FOR INSERT
-  WITH CHECK (auth.uid() = id);
-
--- Registrations table policies
-ALTER TABLE registrations ENABLE ROW LEVEL SECURITY;
-
-CREATE POLICY "Users can view their own registrations"
-  ON registrations FOR SELECT
-  USING (auth.uid() = user_id);
-
-CREATE POLICY "Users can insert their own registrations"
-  ON registrations FOR INSERT
-  WITH CHECK (auth.uid() = user_id);
-
-CREATE POLICY "Users can update their own registrations"
-  ON registrations FOR UPDATE
-  USING (auth.uid() = user_id);
-
--- Admin policies
+-- Admin policiespour que les utilisateurs v
 CREATE FUNCTION is_admin() 
 RETURNS bool AS $$
   SELECT EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND is_admin = TRUE);
 $$ LANGUAGE sql SECURITY DEFINER;
-
-CREATE POLICY "Admins can view all profiles"
-  ON profiles FOR SELECT
-  USING (is_admin());
-
-CREATE POLICY "Admins can update all profiles"
-  ON profiles FOR UPDATE
-  USING (is_admin());
-
-CREATE POLICY "Admins can view all registrations"
-  ON registrations FOR SELECT
-  USING (EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND is_admin = TRUE));
-
-CREATE POLICY "Admins can update all registrations"
-  ON registrations FOR UPDATE
-  USING (EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND is_admin = TRUE));
 
 -- Create a trigger to automatically create a profile when a new user is added
 CREATE OR REPLACE FUNCTION public.handle_new_user() 
@@ -165,32 +116,6 @@ CHECK (phone ~ '^(?:(?:\+|00)33|0)\s*[1-9](?:[\s.-]*\d{2}){4}$');
 ALTER TABLE registrations
 ADD CONSTRAINT check_email_format
 CHECK (email ~* '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z]{2,}$');
-
--- Create a function to check if is_admin is being modified
-CREATE OR REPLACE FUNCTION prevent_is_admin_modification()
-RETURNS TRIGGER AS $$
-BEGIN
-    IF OLD.is_admin IS DISTINCT FROM NEW.is_admin THEN
-        RAISE EXCEPTION 'Modifying is_admin field is not allowed';
-    END IF;
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
--- Create a trigger that uses the function
-CREATE TRIGGER prevent_is_admin_change
-BEFORE UPDATE ON profiles
-FOR EACH ROW
-EXECUTE FUNCTION prevent_is_admin_modification();
-
--- Update the RLS policy to allow updates (except is_admin)
-DROP POLICY IF EXISTS "Users can update their own profile" ON profiles;
-
-CREATE POLICY "Users can update their own profile"
-ON profiles
-FOR UPDATE
-USING (auth.uid() = id)
-WITH CHECK (auth.uid() = id);
 
 -- Prevent image rights modification
 CREATE OR REPLACE FUNCTION prevent_image_rights_modification()
@@ -237,38 +162,132 @@ CREATE TRIGGER trg_prevent_payment_delete
   BEFORE DELETE ON payments
   FOR EACH ROW
   EXECUTE FUNCTION prevent_payment_deletion();
+  
+-- Block is_admin modification by users
+CREATE OR REPLACE FUNCTION prevent_is_admin_modification()
+RETURNS TRIGGER AS $$
+BEGIN
+    IF auth.role() = 'authenticated' THEN
+    	IF NOT is_admin() THEN
+	        IF OLD.is_admin IS DISTINCT FROM NEW.is_admin THEN
+        	    RAISE EXCEPTION 'Modifying is_admin is forbidden for non-admin users';
+        	END IF;
+        END IF;
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
 
--- Enable Row Level Security
+-- Use trigger to call function
+CREATE TRIGGER trg_prevent_is_admin_modification
+BEFORE UPDATE ON profiles
+FOR EACH ROW
+EXECUTE FUNCTION prevent_is_admin_modification();
+
+-- Trigger function to protect payment_mode, user_id, and year
+CREATE OR REPLACE FUNCTION protect_registration_fields()
+RETURNS TRIGGER AS $$
+BEGIN
+    IF OLD.user_id IS DISTINCT FROM NEW.user_id THEN
+        RAISE EXCEPTION 'Cannot modify user_id of a registration';
+    END IF;
+
+    IF OLD.year IS DISTINCT FROM NEW.year THEN
+        RAISE EXCEPTION 'Cannot modify year of a registration';
+    END IF;
+
+    IF OLD.payment_mode IS DISTINCT FROM NEW.payment_mode THEN
+        IF EXISTS (
+            SELECT 1
+            FROM payments
+            WHERE registration_id = OLD.id
+              AND status = 'succeeded'
+        ) THEN
+            RAISE EXCEPTION 'Cannot change payment_mode: payment already successful';
+        END IF;
+    END IF;
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Trigger on registrations
+CREATE TRIGGER trg_protect_registration_fields
+BEFORE UPDATE ON registrations
+FOR EACH ROW
+EXECUTE FUNCTION protect_registration_fields();
+
+-- Fix RLS vulnerabilites and clean RLS
+ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
+ALTER TABLE registrations ENABLE ROW LEVEL SECURITY;
 ALTER TABLE payments ENABLE ROW LEVEL SECURITY;
 
--- Policy: Users can view their own payments
-CREATE POLICY "Users can view their own payments"
-  ON payments FOR SELECT
-  USING (auth.uid() = user_id);
+-- Users: SELECT own profile
+CREATE POLICY profiles_user_select
+ON profiles
+FOR SELECT
+USING (id = auth.uid());
 
--- Policy: Prevent all direct inserts (use RPC or webhook only)
-CREATE POLICY "No direct inserts"
-  ON payments FOR INSERT
-  WITH CHECK (false);
+-- Users: UPDATE own profile (except is_admin handled by trigger)
+CREATE POLICY profiles_user_update
+ON profiles
+FOR UPDATE
+USING (id = auth.uid())
+WITH CHECK (id = auth.uid());
 
--- Policy: Prevent all updates
-CREATE POLICY "No updates"
-  ON payments FOR UPDATE
-  USING (false);
+-- Admins: SELECT all profiles
+CREATE POLICY profiles_admin_select
+ON profiles
+FOR SELECT
+USING (is_admin());
 
--- Policy: Prevent all deletions
-CREATE POLICY "No deletes"
-  ON payments FOR DELETE
-  USING (false);
+-- Admins: UPDATE all profiles
+CREATE POLICY profiles_admin_update
+ON profiles
+FOR UPDATE
+USING (is_admin())
+WITH CHECK (is_admin());
 
--- Policy: Admins can view all payments
-CREATE POLICY "Admins can view all payments"
-  ON payments FOR SELECT
-  USING (
-    EXISTS (
-      SELECT 1 FROM profiles WHERE id = auth.uid() AND is_admin = TRUE
-    )
-  );
+-- Users: SELECT own registrations
+CREATE POLICY registrations_user_select
+ON registrations
+FOR SELECT
+USING (user_id = auth.uid());
 
+-- Users: INSERT own registrations
+CREATE POLICY registrations_user_insert
+ON registrations
+FOR INSERT
+WITH CHECK (user_id = auth.uid());
 
+-- Users: UPDATE own registrations (column restrictions via triggers)
+CREATE POLICY registrations_user_update
+ON registrations
+FOR UPDATE
+USING (user_id = auth.uid())
+WITH CHECK (user_id = auth.uid());
 
+-- Admins: SELECT all registrations
+CREATE POLICY registrations_admin_select
+ON registrations
+FOR SELECT
+USING (is_admin());
+
+-- Admins: UPDATE all registrations
+CREATE POLICY registrations_admin_update
+ON registrations
+FOR UPDATE
+USING (is_admin())
+WITH CHECK (is_admin());
+
+-- Users: SELECT own payments
+CREATE POLICY payments_user_select
+ON payments
+FOR SELECT
+USING (user_id = auth.uid());
+
+-- Admins: SELECT all payments
+CREATE POLICY payments_admin_select
+ON payments
+FOR SELECT
+USING (is_admin());

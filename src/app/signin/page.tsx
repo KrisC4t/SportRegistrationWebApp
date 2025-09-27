@@ -37,7 +37,9 @@ export default function SignIn() {
     if (error) {
       alert(error.message)
     } else {
-      router.push('/home')
+      alert('Authentication success');
+      window.location.replace('/home');
+      // router.push('/home')
     }
   }
 

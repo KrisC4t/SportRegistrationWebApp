@@ -56,13 +56,13 @@ export default function DownloadRegistrations() {
 
     const rows = data.map(row => headers.map(h => {
       if (h === 'paid') {
-        const paid = row.payments?.some(p => p.status.toLowerCase() === 'success') ?? false
-        return paid ? 'Yes' : 'No'
+        const paid = row.payments?.some(p => p.status.toLowerCase() === 'succeeded') ?? false
+        return paid ? '"Yes"' : '"No"'
       }
 
       const value = row[h as keyof Registration]
 
-      if (typeof value === 'boolean') return value ? 'Yes' : 'No'
+      if (typeof value === 'boolean') return value ? '"Yes"' : '"No"'
       if (value instanceof Date) return value.toISOString()
       if (value === undefined || value === null) return ''
 
