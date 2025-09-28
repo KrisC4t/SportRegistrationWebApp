@@ -97,21 +97,17 @@ export default function ClubRegistration() {
       alert('Please log in before registering.');
       return;
     }
-
-    if (!formData.image_rights_consent) {
-      alert('You must accept the image rights to continue.');
-      return;
-    }
     
     const registrationPayload: Registration = {
       ...formData,
       user_id: user.id,
       year: new Date().getFullYear(),
     }
+    delete (registrationPayload as any).image_rights_consent;
 
     const { data: registrationData, error: registrationError } = await supabase
       .from('registrations')
-      .upsert(registrationPayload)
+      .upsert(registrationPayload, { onConflict: 'user_id, year' })
       .select()
       .single();
 
@@ -120,11 +116,18 @@ export default function ClubRegistration() {
       console.error('registration error', registrationError);
       return;
     }
+    
+    const { error: imageRightsError } = await supabase
+      .from('image_rights')
+      .insert({
+        registration_id: registrationData.id,
+        user_id: user.id,
+        image_rights_consent: formData.image_rights_consent,
+      });
 
-    const { error: profileError } = await supabase
-      .from('profiles')
-      .update({ last_registration: new Date().toISOString().split('T')[0] })
-      .eq('id', user.id);
+    if (imageRightsError) {
+      console.error('Error inserting image rights history', imageRightsError);
+    }
 
     async function launchPayment(registrationId: string) {
       // Get the access token to identify the caller server-side
@@ -286,9 +289,6 @@ export default function ClubRegistration() {
               />
               <label htmlFor="image_rights_consent" className="text-sm font-medium leading-snug">
                 I consent to the use of my image as part of the club's communication materials. <br />
-                <span className="text-xs text-muted-foreground">
-                  This consent cannot be changed once submitted.
-                </span>
               </label>
             </div>
           </CardContent>

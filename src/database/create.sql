@@ -11,6 +11,13 @@ CREATE TABLE profiles (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Create profiles_history table
+CREATE TABLE profiles_history (
+    id UUID,
+    email TEXT UNIQUE NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Create registrations table
 CREATE TABLE registrations (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -24,7 +31,6 @@ CREATE TABLE registrations (
     birthdate DATE NOT NULL,
     address TEXT NOT NULL,
     payment_mode TEXT NOT NULL,
-    image_rights_consent BOOLEAN NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT unique_user_year UNIQUE (user_id, year)
@@ -35,14 +41,26 @@ CREATE TABLE registrations (
 
 CREATE TABLE payments (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    registration_id UUID NOT NULL REFERENCES registrations(id) ON DELETE CASCADE,
-    user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+    registration_id UUID NOT NULL REFERENCES registrations(id),
+    user_id UUID NOT NULL REFERENCES profiles(id),
     stripe_payment_id TEXT UNIQUE NOT NULL,
     amount INT NOT NULL,
     currency TEXT NOT NULL DEFAULT 'eur',
     status TEXT NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
+
+-- Table: image_rights
+-- Stores image rights. Entries are immutable after creation.
+
+CREATE TABLE image_rights (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    registration_id UUID NOT NULL REFERENCES registrations(id),
+    user_id UUID NOT NULL REFERENCES profiles(id),
+    image_rights_consent BOOLEAN NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
 
 -- Create function to handle user deletion
 CREATE OR REPLACE FUNCTION delete_current_user()
@@ -101,9 +119,44 @@ RETURNS TRIGGER AS $$
 BEGIN
   INSERT INTO public.profiles (id, email)
   VALUES (NEW.id, NEW.email);
+  
+  INSERT INTO public.profiles_history (id, email)
+  VALUES (NEW.id, NEW.email);
+
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Trigger function to insert only if consent value changed
+CREATE OR REPLACE FUNCTION image_rights_history_insert()
+RETURNS TRIGGER AS $$
+DECLARE
+  last_consent image_rights%ROWTYPE;
+BEGIN
+  -- Get the last entry for this registration and user
+  SELECT *
+  INTO last_consent
+  FROM image_rights
+  WHERE registration_id = NEW.registration_id
+    AND user_id = NEW.user_id
+  ORDER BY created_at DESC
+  LIMIT 1;
+
+  -- If no previous entry, or value changed, allow the insert
+  IF last_consent IS NULL OR last_consent.image_rights_consent IS DISTINCT FROM NEW.image_rights_consent THEN
+    RETURN NEW;
+  ELSE
+    -- Otherwise, skip the insert
+    RETURN NULL;
+  END IF;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Trigger BEFORE INSERT
+CREATE TRIGGER trg_image_rights_before_insert
+BEFORE INSERT ON image_rights
+FOR EACH ROW
+EXECUTE FUNCTION image_rights_history_insert();
 
 CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
@@ -117,23 +170,30 @@ ALTER TABLE registrations
 ADD CONSTRAINT check_email_format
 CHECK (email ~* '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z]{2,}$');
 
--- Prevent image rights modification
-CREATE OR REPLACE FUNCTION prevent_image_rights_modification()
+-- Trigger function to update last_registration in profiles
+CREATE OR REPLACE FUNCTION update_last_registration()
 RETURNS TRIGGER AS $$
 BEGIN
-  IF OLD.image_rights_consent IS DISTINCT FROM NEW.image_rights_consent THEN
-    RAISE EXCEPTION 'Image rights consent cannot be modified after registration.';
-  END IF;
+  UPDATE profiles
+  SET last_registration = CURRENT_DATE,
+      updated_at = now()
+  WHERE id = NEW.user_id;
 
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
 
--- Create a trigger that uses the function
-CREATE TRIGGER trg_prevent_image_rights_modification
-  BEFORE UPDATE ON registrations
-  FOR EACH ROW
-  EXECUTE FUNCTION prevent_image_rights_modification();
+-- Trigger on INSERT
+CREATE TRIGGER trg_update_last_registration_insert
+AFTER INSERT ON registrations
+FOR EACH ROW
+EXECUTE FUNCTION update_last_registration();
+
+-- Trigger on UPDATE
+CREATE TRIGGER trg_update_last_registration_update
+AFTER UPDATE ON registrations
+FOR EACH ROW
+EXECUTE FUNCTION update_last_registration();
 
 -- Function: Prevents any update on payments
 CREATE OR REPLACE FUNCTION prevent_payment_modification()
@@ -162,6 +222,62 @@ CREATE TRIGGER trg_prevent_payment_delete
   BEFORE DELETE ON payments
   FOR EACH ROW
   EXECUTE FUNCTION prevent_payment_deletion();
+  
+-- Function: Prevents any update on profiles_history
+CREATE OR REPLACE FUNCTION prevent_profiles_history_modification()
+RETURNS TRIGGER AS $$
+BEGIN
+  RAISE EXCEPTION 'Profiles history cannot be modified after creation.';
+END;
+$$ LANGUAGE plpgsql;
+
+-- Function: Prevents any deletion on profiles_history
+CREATE OR REPLACE FUNCTION prevent_payment_deletion()
+RETURNS TRIGGER AS $$
+BEGIN
+  RAISE EXCEPTION 'Profiles history cannot be deleted.';
+END;
+$$ LANGUAGE plpgsql;
+
+-- Trigger: Blocks updates on profiles_history
+CREATE TRIGGER trg_prevent_profiles_history_update
+  BEFORE UPDATE ON payments
+  FOR EACH ROW
+  EXECUTE FUNCTION prevent_profiles_history_modification();
+
+-- Trigger: Blocks deletions on profiles_history
+CREATE TRIGGER trg_prevent_profiles_history_delete
+  BEFORE DELETE ON payments
+  FOR EACH ROW
+  EXECUTE FUNCTION prevent_profiles_history_deletion();
+  
+-- Function: Prevents any update on image_rights
+CREATE OR REPLACE FUNCTION prevent_image_rights_modification()
+RETURNS TRIGGER AS $$
+BEGIN
+  RAISE EXCEPTION 'Profiles history cannot be modified after creation.';
+END;
+$$ LANGUAGE plpgsql;
+
+-- Function: Prevents any deletion on image_rights
+CREATE OR REPLACE FUNCTION prevent_payment_deletion()
+RETURNS TRIGGER AS $$
+BEGIN
+  RAISE EXCEPTION 'Profiles history cannot be deleted.';
+END;
+$$ LANGUAGE plpgsql;
+
+-- Trigger: Blocks updates on image_rights
+CREATE TRIGGER trg_prevent_image_rights_update
+  BEFORE UPDATE ON payments
+  FOR EACH ROW
+  EXECUTE FUNCTION prevent_image_rights_modification();
+
+-- Trigger: Blocks deletions on image_rights
+CREATE TRIGGER trg_prevent_image_rights_delete
+  BEFORE DELETE ON payments
+  FOR EACH ROW
+  EXECUTE FUNCTION prevent_image_rights_deletion();
   
 -- Block is_admin modification by users
 CREATE OR REPLACE FUNCTION prevent_is_admin_modification()
