@@ -159,10 +159,6 @@ export default function ClubRegistration() {
     }
 
     await launchPayment(registrationData.id);
-
-    if (profileError) {
-      console.warn('Profile update error:', profileError);
-    }
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -300,3 +296,4 @@ export default function ClubRegistration() {
     </div>
   )
 }
+
