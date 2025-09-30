@@ -57,8 +57,7 @@ export default function ClubRegistration() {
     const fetchPreviousRegistration = async () => {
       const { data: { user } } = await supabase.auth.getUser()
       if (user) {
-        // Now fetch the previous registration
-        const { data, error } = await supabase
+        const { data: registration, error: regError } = await supabase
           .from('registrations')
           .select('*')
           .eq('user_id', user.id)
@@ -66,23 +65,33 @@ export default function ClubRegistration() {
           .limit(1)
           .single()
 
-        if (data && !error) {
+        if (registration && !regError) {
+          // Try to fetch the last image_rights for this registration
+          const { data: rights } = await supabase
+            .from('image_rights')
+            .select('image_rights_consent')
+            .eq('registration_id', registration.id)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .single()
+
           setFormData({
-	    lastname: data.lastname || '',
-	    firstname: data.firstname || '',
-	    phone: data.phone || '',
-	    whatsapp: data.whatsapp || false,
-	    email: data.email || '',
-	    birthdate: data.birthdate || '',
-	    address: data.address || '',
-	    payment_mode: data.payment_mode || '',
-	    image_rights_consent: data.image_rights_consent || false,
-	  })
+            lastname: registration.lastname || '',
+            firstname: registration.firstname || '',
+            phone: registration.phone || '',
+            whatsapp: registration.whatsapp || false,
+            email: registration.email || '',
+            birthdate: registration.birthdate || '',
+            address: registration.address || '',
+            payment_mode: registration.payment_mode || '',
+            image_rights_consent: rights?.image_rights_consent ?? false,
+          })
         }
       }
     }
     fetchPreviousRegistration()
   }, [supabase])
+
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -158,7 +167,9 @@ export default function ClubRegistration() {
       }
     }
 
-    await launchPayment(registrationData.id);
+    if (formData.payment_mode === 'carte bancaire') {
+      await launchPayment(registrationData.id);
+    }
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -281,7 +292,6 @@ export default function ClubRegistration() {
                 onCheckedChange={(checked) =>
                   setFormData(prev => ({ ...prev, image_rights_consent: checked as boolean }))
                 }
-                required
               />
               <label htmlFor="image_rights_consent" className="text-sm font-medium leading-snug">
                 I consent to the use of my image as part of the club's communication materials. <br />

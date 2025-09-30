@@ -41,8 +41,8 @@ CREATE TABLE registrations (
 
 CREATE TABLE payments (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    registration_id UUID NOT NULL REFERENCES registrations(id),
-    user_id UUID NOT NULL REFERENCES profiles(id),
+    registration_id UUID NOT NULL REFERENCES registrations(id) ON DELETE SET NULL,
+    user_id UUID NOT NULL,
     stripe_payment_id TEXT UNIQUE NOT NULL,
     amount INT NOT NULL,
     currency TEXT NOT NULL DEFAULT 'eur',
@@ -55,8 +55,8 @@ CREATE TABLE payments (
 
 CREATE TABLE image_rights (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    registration_id UUID NOT NULL REFERENCES registrations(id),
-    user_id UUID NOT NULL REFERENCES profiles(id),
+    registration_id UUID NOT NULL REFERENCES registrations(id) ON DELETE SET NULL,
+    user_id UUID NOT NULL,
     image_rights_consent BOOLEAN NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
@@ -337,6 +337,8 @@ EXECUTE FUNCTION protect_registration_fields();
 ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE registrations ENABLE ROW LEVEL SECURITY;
 ALTER TABLE payments ENABLE ROW LEVEL SECURITY;
+ALTER TABLE profiles_history ENABLE ROW LEVEL SECURITY;
+ALTER TABLE image_rights ENABLE ROW LEVEL SECURITY;
 
 -- Users: SELECT own profile
 CREATE POLICY profiles_user_select

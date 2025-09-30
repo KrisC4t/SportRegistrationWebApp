@@ -22,7 +22,6 @@ interface Registration {
   birthdate: Date;
   address: string;
   payment_mode: string;
-  image_rights_consent: boolean;
   created_at: Date;
   updated_at: Date;
   payments?: Payment[];

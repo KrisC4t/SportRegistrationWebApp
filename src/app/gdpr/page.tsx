@@ -27,8 +27,8 @@ export default function GDPR() {
           <h2 className="text-xl font-semibold mb-2">2. Image Rights</h2>
           <p className="mb-4">
             Upon registration, you can consent to the use of photographs and videos in which you may appear for the purpose
-            of promoting and communicating about the club. Your consent can be **modified later**, and each modification
-            is **historized in our database**.  
+            of promoting and communicating about the club. Your consent can be <span className="font-bold">modified later</span>, and each modification
+            is <span className="font-bold">historized in our database</span>.  
             This ensures a complete record of image rights over time, allowing the club to prove the consent that was valid
             at any specific date. Published images are always used according to the consent in force at the time of use.
           </p>
@@ -36,8 +36,8 @@ export default function GDPR() {
           <h2 className="text-xl font-semibold mb-2">3. Payments and Financial Data</h2>
           <p className="mb-4">
             Payments made via Stripe are stored immutably in our database and linked to your registration and email.
-            Even if your profile is deleted, your email and payment records are preserved to provide a **legal proof of
-            payments and financial transactions**. Payment records are never modified or deleted except under legal obligation.
+            Even if your profile is deleted, your email and payment records are preserved to provide a <span className="font-bold">legal proof of
+            payments and financial transactions</span>. Payment records are never modified or deleted except under legal obligation.
           </p>
 
           <h2 className="text-xl font-semibold mb-2">4. Data Storage and Security</h2>
@@ -51,7 +51,7 @@ export default function GDPR() {
           <p className="mb-4">
             Your personal data is retained for the duration of your active membership plus two years.  
             This includes profile data, registration details, payments, and all historical image rights records.  
-            Email addresses are retained for **proof of payments and image consent**, even after profile deletion, strictly
+            Email addresses are retained for <span className="font-bold">proof of payments and image consent</span>, even after profile deletion, strictly
             for legal and administrative purposes.
           </p>
 
