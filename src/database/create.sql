@@ -232,7 +232,7 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- Function: Prevents any deletion on profiles_history
-CREATE OR REPLACE FUNCTION prevent_payment_deletion()
+CREATE OR REPLACE FUNCTION prevent_profiles_history_deletion()
 RETURNS TRIGGER AS $$
 BEGIN
   RAISE EXCEPTION 'Profiles history cannot be deleted.';
@@ -260,7 +260,7 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- Function: Prevents any deletion on image_rights
-CREATE OR REPLACE FUNCTION prevent_payment_deletion()
+CREATE OR REPLACE FUNCTION prevent_image_rights_deletion()
 RETURNS TRIGGER AS $$
 BEGIN
   RAISE EXCEPTION 'Profiles history cannot be deleted.';
