@@ -170,6 +170,8 @@ export default function ClubRegistration() {
     if (formData.payment_mode === 'carte bancaire') {
       await launchPayment(registrationData.id);
     }
+    
+    alert("Registration successful");
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {

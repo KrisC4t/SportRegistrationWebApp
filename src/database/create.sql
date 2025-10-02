@@ -14,7 +14,7 @@ CREATE TABLE profiles (
 -- Create profiles_history table
 CREATE TABLE profiles_history (
     id UUID,
-    email TEXT UNIQUE NOT NULL,
+    email TEXT NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -339,6 +339,24 @@ ALTER TABLE registrations ENABLE ROW LEVEL SECURITY;
 ALTER TABLE payments ENABLE ROW LEVEL SECURITY;
 ALTER TABLE profiles_history ENABLE ROW LEVEL SECURITY;
 ALTER TABLE image_rights ENABLE ROW LEVEL SECURITY;
+
+-- Admins: SELECT all image_rights
+CREATE POLICY image_rights_admin_select
+ON image_rights
+FOR SELECT
+USING (is_admin());
+
+-- Users: SELECT own image_rights
+CREATE POLICY image_rights_user_select
+ON image_rights
+FOR SELECT
+USING (user_id = auth.uid());
+
+-- Users: INSERT own image_rights
+CREATE POLICY image_rights_user_insert
+ON image_rights
+FOR INSERT
+WITH CHECK (user_id = auth.uid());
 
 -- Users: SELECT own profile
 CREATE POLICY profiles_user_select
