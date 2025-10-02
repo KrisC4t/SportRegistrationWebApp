@@ -41,16 +41,16 @@ export default function Home() {
 
   return (
     <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">Welcome, {user.email}</h1>
+      <h1 className="text-2xl font-bold mb-4">Bienvenue, {user.email}</h1>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         <Link href="/club-registration" passHref>
           <Card className="cursor-pointer hover:shadow-lg transition-shadow duration-200">
             <CardHeader>
               <CardTitle className="flex items-center">
                 <ClipboardList className="mr-2" />
-                Club Registration
+                Site d&#39;inscription au club d&#39;auto défense
               </CardTitle>
-              <CardDescription>Register for this year&#39;s club membership</CardDescription>
+              <CardDescription>Inscription pour cette année au club d&#39;auto défense</CardDescription>
             </CardHeader>
           </Card>
         </Link>
@@ -59,9 +59,9 @@ export default function Home() {
             <CardHeader>
               <CardTitle className="flex items-center">
                 <Trash2 className="mr-2" />
-                Delete Account
+                Supprimer votre compte
               </CardTitle>
-              <CardDescription>Permanently delete your account</CardDescription>
+              <CardDescription>Suppression définitive de votre compte</CardDescription>
             </CardHeader>
           </Card>
         </Link>
@@ -70,9 +70,9 @@ export default function Home() {
             <CardHeader>
               <CardTitle className="flex items-center">
                 <Scale className="mr-2" />
-                GDPR Information
+                Information RGPD
               </CardTitle>
-              <CardDescription>View our data protection policies</CardDescription>
+              <CardDescription>Voir la politique de sécurité de vos données relative au RGPD</CardDescription>
             </CardHeader>
           </Card>
         </Link>
@@ -83,9 +83,9 @@ export default function Home() {
                 <CardHeader>
                   <CardTitle className="flex items-center">
                     <UserCog className="mr-2" />
-                    Manage Accounts
+                    Gestion des instructeurs
                   </CardTitle>
-                  <CardDescription>View and manage user accounts</CardDescription>
+                  <CardDescription>Gérer les droits des comptes pour les instructeurs du club d&#39;auto défense</CardDescription>
                 </CardHeader>
               </Card>
             </Link>
@@ -94,9 +94,9 @@ export default function Home() {
                 <CardHeader>
                   <CardTitle className="flex items-center">
                     <Download className="mr-2" />
-                    Download Registrations
+                    Télécharger les inscriptions
                   </CardTitle>
-                  <CardDescription>Download current year registrations</CardDescription>
+                  <CardDescription>Télécharger les inscriptions pour l&#39;année en cours</CardDescription>
                 </CardHeader>
               </Card>
             </Link>
@@ -105,9 +105,9 @@ export default function Home() {
                 <CardHeader>
                   <CardTitle className="flex items-center">
                     <Cleaner className="mr-2" />
-                    Clean Database
+                    Comptes inactifs
                   </CardTitle>
-                  <CardDescription>Remove inactive accounts</CardDescription>
+                  <CardDescription>Suppression des comptes inactifs</CardDescription>
                 </CardHeader>
               </Card>
             </Link>

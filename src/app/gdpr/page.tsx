@@ -11,7 +11,7 @@ export default function GDPR() {
         <CardHeader>
           <CardTitle className="flex items-center">
             <Scale className="mr-2" />
-            GDPR Information
+            Information RGPD
           </CardTitle>
           <CardDescription>How we handle your personal data</CardDescription>
         </CardHeader>

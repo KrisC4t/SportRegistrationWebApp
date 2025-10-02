@@ -22,7 +22,7 @@ export default function Header() {
         <Button asChild variant="link" className="w-full md:w-auto justify-start text-primary-foreground">
           <Link href="/home" className="text-xl font-bold">
             <Swords className="mr-2 h-8 w-8" />
-            Self Defense Club
+            Club d&#39;auto défense
             <Swords className="ml-2 h-8 w-8" />
           </Link>
         </Button>
@@ -30,23 +30,23 @@ export default function Header() {
           <Button asChild variant="link" className="w-full md:w-auto justify-start text-primary-foreground">
             <Link href="/home" className="hover:underline">
               <House className="mr-2 h-4 w-4" />
-              Home
+              Accueil
             </Link>
           </Button>
           <Button asChild variant="link" className="w-full md:w-auto justify-start text-primary-foreground">
             <Link href="/club-registration" className="hover:underline">
               <ClipboardList className="mr-2 h-4 w-4" />
-              Register
+              Incriptions
             </Link>
           </Button>
           <Button asChild variant="link" className="w-full md:w-auto justify-start text-primary-foreground">
             <Link href="/gdpr" className="hover:underline">
               <Scale className="mr-2 h-4 w-4" />
-              GDPR
+              RGPD
             </Link>
           </Button>
           <Button onClick={handleSignOut} variant="outline">
-            Sign Out
+            Déconnexion
           </Button>
         </div>
       </nav>
