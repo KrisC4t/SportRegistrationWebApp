@@ -76,7 +76,7 @@ export default function SignIn() {
             </div>
           </CardContent>
           <CardFooter className="flex flex-col space-y-4">
-            <Button type="submit" className="w-full" disabled={isLoading}>{isLoading ? 'Signing in...' : 'Sign In'}</Button>
+            <Button type="submit" className="w-full" disabled={isLoading}>{isLoading ? 'Connexion en cours...' : 'Connexion'}</Button>
             <div className="text-sm text-center">
               Vous n&#39;avez pas de compte ?{' '}
               <Link href="/register" className="text-muted-foreground hover:underline">

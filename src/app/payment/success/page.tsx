@@ -14,19 +14,19 @@ export default function PaymentSuccess() {
       <Card className="w-full max-w-md text-center">
         <CardHeader>
           <CheckCircle className="mx-auto text-green-600" size={48} />
-          <CardTitle className="mt-4">Payment Successful</CardTitle>
+          <CardTitle className="mt-4">Paiement Réussi</CardTitle>
           <CardDescription>
-            Thank you for your payment. Your registration is now confirmed.
+            Merci pour votre paiement. Votre inscription est maintenant confirmée.
           </CardDescription>
         </CardHeader>
         <CardContent>
           <p className="text-muted-foreground text-sm">
-            You will receive a confirmation email shortly.
+            Vous recevrez un email de confirmation dans les plus brefs délais.
           </p>
         </CardContent>
         <CardFooter>
           <Button className="w-full" onClick={() => router.push('/home')}>
-            Return to Home
+            Retour à l'accueil
           </Button>
         </CardFooter>
       </Card>

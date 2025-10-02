@@ -78,7 +78,7 @@ export async function POST(req: Request) {
         {
           price_data: {
             currency: CURRENCY,
-            product_data: { name: 'Sports registration' },
+            product_data: { name: 'Inscription sportive' },
             unit_amount: AMOUNT_CENTS,
           },
           quantity: 1,

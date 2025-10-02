@@ -60,7 +60,7 @@ export default function Register() {
           </CardContent>
           <CardFooter>
             <Button onClick={() => window.location.replace('/signin')} className="w-full">
-              Return to Sign In
+              Retourner à la page d&#39;inscription
             </Button>
           </CardFooter>
         </Card>

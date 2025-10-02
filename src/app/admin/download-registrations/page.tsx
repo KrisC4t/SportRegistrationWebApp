@@ -42,7 +42,7 @@ export default function DownloadRegistrations() {
       alert(error.message)
     } else {
       const csv: string = convertToCSV(data as Registration[])
-      downloadCSV(csv, `registrations_${new Date().getFullYear()}.csv`)
+      downloadCSV(csv, `inscriptions_${new Date().getFullYear()}.csv`)
     }
     setIsLoading(false)
   }
@@ -56,12 +56,12 @@ export default function DownloadRegistrations() {
     const rows = data.map(row => headers.map(h => {
       if (h === 'paid') {
         const paid = row.payments?.some(p => p.status.toLowerCase() === 'succeeded') ?? false
-        return paid ? '"Yes"' : '"No"'
+        return paid ? '"Oui"' : '"Non"'
       }
 
       const value = row[h as keyof Registration]
 
-      if (typeof value === 'boolean') return value ? '"Yes"' : '"No"'
+      if (typeof value === 'boolean') return value ? '"Oui"' : '"Non"'
       if (value instanceof Date) return value.toISOString()
       if (value === undefined || value === null) return ''
 

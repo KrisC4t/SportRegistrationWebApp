@@ -103,7 +103,7 @@ export default function ClubRegistration() {
     const user = session?.user;
 
     if (sessionError || !user) {
-      alert('Please log in before registering.');
+      alert('Avant de vous inscrire, identifiez-vous avec votre compte, s\'il vous plait.');
       return;
     }
     
@@ -121,7 +121,7 @@ export default function ClubRegistration() {
       .single();
 
     if (registrationError || !registrationData) {
-      alert(registrationError?.message ?? 'Error saving the registration.');
+      alert(registrationError?.message ?? 'Erreur durant l\'enregistrement de l\'inscription.');
       console.error('registration error', registrationError);
       return;
     }
@@ -145,7 +145,7 @@ export default function ClubRegistration() {
       const accessToken = session?.access_token;
 
       if (sessionError || !accessToken) {
-        alert('Unable to retrieve session. Please log in again.');
+        alert('Impossible de retrouver votre session, réidentifiez-vous, s\'il vous plait.');
         return;
       }
   
@@ -162,7 +162,7 @@ export default function ClubRegistration() {
       if (data?.url) {
         window.location.href = data.url;
       } else {
-        alert('Error creating the payment : ' + (data?.error ?? 'unknown'));
+        alert('Erreur durant la création du paiement: ' + (data?.error ?? 'inconnu'));
         console.error('create-checkout failure', data);
       }
     }
@@ -171,7 +171,7 @@ export default function ClubRegistration() {
       await launchPayment(registrationData.id);
     }
     
-    alert("Registration successful");
+    alert("Inscription réussi !");
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -279,10 +279,10 @@ export default function ClubRegistration() {
                   <SelectValue placeholder="Select payment mode" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="espèces">Cash</SelectItem>
-                  <SelectItem value="1 chèque bancaire">1 bank check</SelectItem>
-                  <SelectItem value="2 chèques bancaires">2 bank checks</SelectItem>
-                  <SelectItem value="carte bancaire">Credit card (online)</SelectItem>
+                  <SelectItem value="espèces">Espèces</SelectItem>
+                  <SelectItem value="1 chèque bancaire">1 chèque bancaire</SelectItem>
+                  <SelectItem value="2 chèques bancaires">2 chèques bancaires</SelectItem>
+                  <SelectItem value="carte bancaire">Carte bancaire (en ligne)</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -296,7 +296,7 @@ export default function ClubRegistration() {
                 }
               />
               <label htmlFor="image_rights_consent" className="text-sm font-medium leading-snug">
-                I consent to the use of my image as part of the club's communication materials. <br />
+                Je consens à l&#39;utilisation de mon image dans le cadre des supports de communication du club. <br />
               </label>
             </div>
           </CardContent>

@@ -14,25 +14,26 @@ export default function PaymentCancel() {
       <Card className="w-full max-w-md text-center">
         <CardHeader>
           <XCircle className="mx-auto text-red-600" size={48} />
-          <CardTitle className="mt-4">Payment Cancelled</CardTitle>
+          <CardTitle className="mt-4">Paiement Annulé</CardTitle>
           <CardDescription>
-            Your payment was not completed. You can try again or use another payment method.
+            Votre paiement n'a pas été effectué. Vous pouvez réessayer ou utiliser un autre mode de paiement.
           </CardDescription>
         </CardHeader>
         <CardContent>
           <p className="text-muted-foreground text-sm">
-            If the issue persists, contact us or try again later.
+            Si le problème persiste, contactez-nous ou réessayez plus tard.
           </p>
         </CardContent>
         <CardFooter className="flex flex-col space-y-2 w-full">
           <Button className="w-full" variant="secondary" onClick={() => router.push('/home')}>
-            Return to Home
+            Retour à l'accueil
           </Button>
           <Button className="w-full" onClick={() => router.push('/register')}>
-            Retry Payment
+            Réessayer le paiement
           </Button>
         </CardFooter>
       </Card>
     </div>
   )
 }
+
