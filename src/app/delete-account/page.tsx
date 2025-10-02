@@ -14,7 +14,7 @@ export default function DeleteAccount() {
   const supabase = createClientComponentClient()
 
   const handleDeleteAccount = async () => {
-    const { error } = await supabase.rpc('delete_user')
+    const { error } = await supabase.rpc('delete_current_user')
     if (error) {
       alert(error.message)
     } else {

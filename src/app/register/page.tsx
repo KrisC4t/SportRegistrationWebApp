@@ -59,8 +59,8 @@ export default function Register() {
             </Alert>
           </CardContent>
           <CardFooter>
-            <Button onClick={() => router.push('/signin')} className="w-full">
-              Retourner à la page d&#39;inscription
+            <Button onClick={() => window.location.replace('/signin')} className="w-full">
+              Return to Sign In
             </Button>
           </CardFooter>
         </Card>

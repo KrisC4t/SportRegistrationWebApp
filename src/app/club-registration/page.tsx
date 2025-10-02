@@ -11,8 +11,35 @@ import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 
+interface FormData {
+  lastname: string
+  firstname: string
+  phone: string
+  whatsapp: boolean
+  email: string
+  birthdate: string
+  address: string
+  payment_mode: string
+  image_rights_consent: boolean
+}
+
+interface Registration {
+  user_id: string
+  year: number
+  lastname: string
+  firstname: string
+  phone: string
+  whatsapp: boolean
+  email: string
+  birthdate: string
+  address: string
+  payment_mode: string
+  image_rights_consent: boolean
+}
+
+
 export default function ClubRegistration() {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormData>({
     lastname: '',
     firstname: '',
     phone: '',
@@ -20,7 +47,8 @@ export default function ClubRegistration() {
     email: '',
     birthdate: '',
     address: '',
-    payment_mode: ''
+    payment_mode: '',
+    image_rights_consent: false
   })
   const router = useRouter()
   const supabase = createClientComponentClient()
@@ -29,8 +57,7 @@ export default function ClubRegistration() {
     const fetchPreviousRegistration = async () => {
       const { data: { user } } = await supabase.auth.getUser()
       if (user) {
-        // Now fetch the previous registration
-        const { data, error } = await supabase
+        const { data: registration, error: regError } = await supabase
           .from('registrations')
           .select('*')
           .eq('user_id', user.id)
@@ -38,38 +65,114 @@ export default function ClubRegistration() {
           .limit(1)
           .single()
 
-        if (data && !error) {
-          setFormData(data)
+        if (registration && !regError) {
+          // Try to fetch the last image_rights for this registration
+          const { data: rights } = await supabase
+            .from('image_rights')
+            .select('image_rights_consent')
+            .eq('registration_id', registration.id)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .single()
+
+          setFormData({
+            lastname: registration.lastname || '',
+            firstname: registration.firstname || '',
+            phone: registration.phone || '',
+            whatsapp: registration.whatsapp || false,
+            email: registration.email || '',
+            birthdate: registration.birthdate || '',
+            address: registration.address || '',
+            payment_mode: registration.payment_mode || '',
+            image_rights_consent: rights?.image_rights_consent ?? false,
+          })
         }
       }
     }
     fetchPreviousRegistration()
   }, [supabase])
 
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    const { data: { user } } = await supabase.auth.getUser()
-    if (user) {
-      const { error: registrationError } = await supabase
-        .from('registrations')
-        .upsert({ ...formData, user_id: user.id, year: new Date().getFullYear() })
+    e.preventDefault();
 
-      if (registrationError) {
-        alert(registrationError.message)
+    const {
+      data: { session },
+      error: sessionError
+    } = await supabase.auth.getSession();
+    const user = session?.user;
+
+    if (sessionError || !user) {
+      alert('Please log in before registering.');
+      return;
+    }
+    
+    const registrationPayload: Registration = {
+      ...formData,
+      user_id: user.id,
+      year: new Date().getFullYear(),
+    }
+    delete (registrationPayload as any).image_rights_consent;
+
+    const { data: registrationData, error: registrationError } = await supabase
+      .from('registrations')
+      .upsert(registrationPayload, { onConflict: 'user_id, year' })
+      .select()
+      .single();
+
+    if (registrationError || !registrationData) {
+      alert(registrationError?.message ?? 'Error saving the registration.');
+      console.error('registration error', registrationError);
+      return;
+    }
+    
+    const { error: imageRightsError } = await supabase
+      .from('image_rights')
+      .insert({
+        registration_id: registrationData.id,
+        user_id: user.id,
+        image_rights_consent: formData.image_rights_consent,
+      });
+
+    if (imageRightsError) {
+      console.error('Error inserting image rights history', imageRightsError);
+    }
+
+    async function launchPayment(registrationId: string) {
+      // Get the access token to identify the caller server-side
+      // If you have supabase-js v2: use auth.getSession() or auth.getUser()
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      const accessToken = session?.access_token;
+
+      if (sessionError || !accessToken) {
+        alert('Unable to retrieve session. Please log in again.');
+        return;
+      }
+  
+      const res = await fetch('/api/stripe/create-checkout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({ registrationId }),
+      });
+
+      const data = await res.json();
+      if (data?.url) {
+        window.location.href = data.url;
       } else {
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .update({ last_registration: new Date().toISOString().split('T')[0] })
-          .eq('id', user.id)
-
-        if (profileError) {
-          alert(profileError.message)
-        } else {
-          router.push('/home')
-        }
+        alert('Error creating the payment : ' + (data?.error ?? 'unknown'));
+        console.error('create-checkout failure', data);
       }
     }
-  }
+
+    if (formData.payment_mode === 'carte bancaire') {
+      await launchPayment(registrationData.id);
+    }
+    
+    alert("Registration successful");
+  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target
@@ -176,11 +279,25 @@ export default function ClubRegistration() {
                   <SelectValue placeholder="Select payment mode" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="espèces">Espèces</SelectItem>
-                  <SelectItem value="1 chèque bancaire">1 chèque bancaire</SelectItem>
-                  <SelectItem value="2 chèques bancaires">2 chèques bancaires</SelectItem>
+                  <SelectItem value="espèces">Cash</SelectItem>
+                  <SelectItem value="1 chèque bancaire">1 bank check</SelectItem>
+                  <SelectItem value="2 chèques bancaires">2 bank checks</SelectItem>
+                  <SelectItem value="carte bancaire">Credit card (online)</SelectItem>
                 </SelectContent>
               </Select>
+            </div>
+            <div className="flex items-start space-x-2 pt-4">
+              <Checkbox
+                id="image_rights_consent"
+                name="image_rights_consent"
+                checked={formData.image_rights_consent}
+                onCheckedChange={(checked) =>
+                  setFormData(prev => ({ ...prev, image_rights_consent: checked as boolean }))
+                }
+              />
+              <label htmlFor="image_rights_consent" className="text-sm font-medium leading-snug">
+                I consent to the use of my image as part of the club's communication materials. <br />
+              </label>
             </div>
           </CardContent>
           <CardFooter>

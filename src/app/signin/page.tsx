@@ -27,14 +27,19 @@ export default function SignIn() {
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleSignIn = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
+    setIsLoading(true);
     const { error } = await supabase.auth.signInWithPassword({ email, password })
+    setIsLoading(false);
     if (error) {
       alert(error.message)
     } else {
-      router.push('/home')
+      // alert('Authentication success');
+      window.location.replace('/home');
+      // router.push('/home')
     }
   }
 
@@ -56,6 +61,7 @@ export default function SignIn() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
+                autoFocus
               />
             </div>
             <div className="space-y-2">
@@ -70,7 +76,7 @@ export default function SignIn() {
             </div>
           </CardContent>
           <CardFooter className="flex flex-col space-y-4">
-            <Button type="submit" className="w-full">Connexion</Button>
+            <Button type="submit" className="w-full" disabled={isLoading}>{isLoading ? 'Signing in...' : 'Sign In'}</Button>
             <div className="text-sm text-center">
               Vous n&#39;avez pas de compte ?{' '}
               <Link href="/register" className="text-muted-foreground hover:underline">

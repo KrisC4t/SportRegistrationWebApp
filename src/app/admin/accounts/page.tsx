@@ -12,8 +12,8 @@ interface Profiles {
   email: string;
   is_admin: boolean;
   last_registration: Date;
-  createdAt: Date;
-  updatedAt: Date;
+  created_at: Date;
+  updated_at: Date;
 }
 
 export default function AdminAccounts() {
